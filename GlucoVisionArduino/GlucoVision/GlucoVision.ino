@@ -3,15 +3,21 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Adafruit_TSL2561_U.h>
 
 const int irLedPin = 9;
+
 const int photodiodePin = A0;
+
+
 const float referenceVoltage = 5.0; 
 
 #define SCREEN_WIDTH 128 
 #define SCREEN_HEIGHT 64 
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT);
+Adafruit_TSL2561_Unified tsl = Adafruit_TSL2561_Unified(TSL2561_ADDR_FLOAT, 12345);
+
 
 const char ssid[] = "Fios-G3n3L";
 const char password[] = "gaffe54eeg23cod";
@@ -50,6 +56,11 @@ void setup() {
   Serial.println("Connected to WiFi");
   printWifiStatus();
 
+  if (!tsl.begin()) {
+    Serial.println("No Sensor Found");
+    while(1);
+  }
+
   Serial.println("\nStarting connection to server...");
   getReading();
 }
@@ -71,6 +82,14 @@ void getReading() {
   Serial.print(" | Voltage: ");
   Serial.print(voltageOn);
   Serial.println(" V");
+
+  uint16_t broadband, ir;
+  int tslValueOn = tsl.getLuminosity(&broadband, &ir);
+  Serial.print("Broadband: ");
+  Serial.println(broadband);
+  Serial.print("IR: ");
+  Serial.println(ir);
+
 
   digitalWrite(irLedPin, LOW);
   delay(1000);
